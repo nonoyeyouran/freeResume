@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简历编辑器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background: #f7fafc;
+            overflow: hidden;
+        }
+
+        .editor, .preview {
+            width: 50%;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .editor {
+            background: #fff;
+            border-right: 1px solid #edf2f7;
+        }
+
+        .preview {
+            background: #f7fafc;
+			display: flex;
+			justify-content: center;
+			align-items: flex-start;
+			padding: 20px;
+        }
+
+        .form-group {
+			margin-bottom: 30px; /* 增加底部间距以分隔 */
+			padding: 8px;
+			border: 3px solid #e2e8f0;
+			border-radius: 4px;
+			background: #fafafa;
+			position: relative;
+        }
+		
+		/* 在每个form-group后添加横线（除了最后一个） */
+		.form-group::before {
+			content: '';
+			display: block;
+			position: absolute;
+			top: -7px; /* 横线位置在form-group下方 */
+			left: 0%;
+			width: 100%;
+			height: 2px;
+			background: #000000; /* 灰色横线 */
+		}
+		
+		/* 个人信息内部的personal-group不需要横线 */
+		.form-group .personal-group {
+			margin-bottom: 0;
+		}
+		
+		/* 确保横线不过于靠近边缘 */
+		.editor > .form-group:first-child {
+			margin-top: 0;
+		}
+
+        label {
+            display: block;
+            margin-bottom: 2px;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        textarea {
+            height: 60px;
+            resize: vertical;
+        }
+
+        .add-btn {
+            background: #68d391;
+            color: white;
+            border: none;
+            padding: 3px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+
+        .checkbox {
+            display: inline-block;
+            width: auto;
+            margin-left: 8px;
+        }
+
+        .order-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 2px 5px;
+            margin: 0 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .personal-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .personal-input {
+            flex: 1 1 48%;
+            min-width: 100px;
+        }
+
+        /* 通用预览样式 */
+        .resume-container {
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+		/* 确保背景填满整个容器 */
+		.resume-container::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: inherit; /* 继承容器的背景色 */
+			z-index: -1;
+		}
+
+        .sidebar {
+            padding: 0px;
+        }
+
+        .main-content {
+            padding: 15px;
+            background: white;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        h2 {
+            margin-bottom: 6px;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .basic-info {
+            margin-bottom: 8px;
+        }
+
+        .basic-info span {
+            margin-right: 10px;
+        }
+		
+		.personal-info-ul {
+            margin: 20px 5px 20px 10px;
+        }
+		
+		.personal-info-span {
+            margin: 10px 100px 0px 20px;
+        }
+		.personal-info-ul1 {
+            margin: 10px 5px 10px 20px;
+        }
+
+        .section {
+            margin-bottom: 10px;
+        }
+
+        .job-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+		
+		.work-details {
+			margin-bottom: 2px;
+		}
+
+        .date {
+            margin-bottom: 4px;
+        }
+
+        ul {
+            list-style: none;
+            margin-left: 10px;
+        }
+
+        .experience ul li {
+            margin: 2px 0;
+        }
+		
+		/* 头像容器样式 */
+		.avatar-container {
+			margin-bottom: 10px;
+		}
+
+		/* 头像图片样式 */
+		#preview-avatar {
+			width: 100px;
+			height: 100px;
+			border-radius: 50%;
+			object-fit: cover;
+			border: 2px solid #e2e8f0;
+		}
+
+        /* 布局1：双栏样式 */
+        .layout-double .sidebar {
+            width: 30%;
+            float: left;
+            height: 100%;
+        }
+
+        .layout-double .main-content {
+            width: 70%;
+            float: right;
+            height: 100%;
+        }
+		
+		/* 双栏布局：头像在上侧 */
+		.layout-double .avatar-container {
+			margin-bottom: 15px;
+			text-align: center;
+		}
+		/* 双栏布局：确保其他内容居中 */
+		.layout-double .sidebar {
+			display: flex;
+			flex-direction: column;
+			justify-content: top;
+			align-items: center;
+			text-align: left;
+			padding: 0px;
+		}
+
+        /* 布局2：单栏样式 */
+		/* 单栏布局：头像在sidebar最右侧 */
+		.layout-single .sidebar {
+			text-align: left;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			flex-wrap: wrap;
+		}
+		
+		.layout-single .avatar-container {
+			order: 2; /* 放置在右侧 */
+			margin-left: auto;
+			margin-bottom: 0;
+			margin-right: 50px;
+		}
+
+		/* 单栏布局：个人信息内容靠左 */
+		.layout-single .sidebar h1 {
+			text-align: left;
+			flex: 1;
+			margin: 0px 0px 0px 20px;
+		}
+		
+		/* 导出PDF时的A4尺寸适配 */
+		@media print {
+			.resume-container {
+				width: 8.5in;
+				min-height: 11in;
+				box-shadow: none;
+				border-radius: 0px;
+				margin: 0px;
+				padding: 0px;
+			}
+			@page {
+				margin: 0px; /* 移除页面边距 */
+			}
+		}
+		
+		/* 调整输入框样式 */
+		#avatar-upload {
+			padding: 5px;
+			font-size: 12px;
+		}
+
+		/* 风格1： 经典黑白 */
+		
+        /* 风格1：简洁蓝 */
+        .blue-crisp .sidebar { background: #e6f0fa; color: #1e3a8a; }
+		.blue-crisp .main-content { background: #eeeeee; }
+        .blue-crisp h1 { color: #1e3a8a; }
+        .blue-crisp .title { color: #3b82f6; }
+        .blue-crisp h2 { color: #1e3a8a; border-bottom: 1px solid #93c5fd; }
+        .blue-crisp .section { padding: 5px; }
+        .blue-crisp .job-title { color: #1e3a8a; }
+        .blue-crisp .date { color: #60a5fa; }
+
+        /* 风格3：温暖橙 */
+        .orange-warm .sidebar { background: #fef3c7; color: #7c2d12; }
+        .orange-warm h1 { color: #c2410c; }
+        .orange-warm .title { color: #ea580c; }
+        .orange-warm h2 { color: #7c2d12; border-bottom: 1px solid #fdba74; }
+        .orange-warm .section { padding: 5px; }
+        .orange-warm .job-title { color: #7c2d12; }
+        .orange-warm .date { color: #ea580c; }
+
+        /* 风格4：极简灰 */
+        .gray-minimal .sidebar { background: #f3f4f6; color: #374151; }
+        .gray-minimal h1 { color: #374151; }
+        .gray-minimal .title { color: #6b7280; }
+        .gray-minimal h2 { color: #374151; border-bottom: 1px dashed #d1d5db; }
+        .gray-minimal .section { padding: 5px; }
+        .gray-minimal .job-title { color: #374151; }
+        .gray-minimal .date { color: #6b7280; }
+
+        /* 风格5：森林绿 */
+        .green-forest .sidebar { background: #d1fae5; color: #14532d; }
+        .green-forest h1 { color: #14532d; }
+        .green-forest .title { color: #15803d; }
+        .green-forest h2 { color: #14532d; border-bottom: 1px solid #6ee7b7; }
+        .green-forest .section { padding: 5px; }
+        .green-forest .job-title { color: #14532d; }
+        .green-forest .date { color: #15803d; }
+
+        /* 风格6：紫色梦幻 */
+        .purple-dream .sidebar { background: #ede9fe; color: #4c1d95; }
+        .purple-dream h1 { color: #6d28d9; }
+        .purple-dream .title { color: #8b5cf6; }
+        .purple-dream h2 { color: #4c1d95; border-bottom: 1px solid #c4b5fd; }
+        .purple-dream .section { padding: 5px; }
+        .purple-dream .job-title { color: #4c1d95; }
+        .purple-dream .date { color: #8b5cf6; }
+
+        /* 风格7：经典红 */
+        .red-classic .sidebar { background: #fee2e2; color: #991b1b; }
+        .red-classic h1 { color: #991b1b; }
+        .red-classic .title { color: #dc2626; }
+        .red-classic h2 { color: #991b1b; border-bottom: 1px solid #f87171; }
+        .red-classic .section { padding: 5px; }
+        .red-classic .job-title { color: #991b1b; }
+        .red-classic .date { color: #dc2626; }
+
+        /* 风格8：海洋蓝 */
+        .blue-ocean .sidebar { background: #dbeafe; color: #1e40af; }
+        .blue-ocean h1 { color: #1e40af; }
+        .blue-ocean .title { color: #3b82f6; }
+        .blue-ocean h2 { color: #1e40af; border-bottom: 1px solid #93c5fd; }
+        .blue-ocean .section { padding: 5px; }
+        .blue-ocean .job-title { color: #1e40af; }
+        .blue-ocean .date { color: #3b82f6; }
+
+        /* 风格9：现代黑 */
+        .black-modern .sidebar { background: #312827; color: #e5e7eb; }
+        .black-modern h1 { color: #e5e7eb; }
+        .black-modern .title { color: #9ca3af; }
+        .black-modern h2 { color: #95e7eb; border-bottom: 1px solid #374151; }
+        .black-modern .section { padding: 5px; color: #111827; }
+        .black-modern .job-title { color: #e5e7eb; }
+        .black-modern .date { color: #9ca3af; }
+
+        /* 风格10：阳光黄 */
+        .yellow-sunny .sidebar { background: #fef9c3; color: #713f12; }
+        .yellow-sunny h1 { color: #713f12; }
+        .yellow-sunny .title { color: #ca8a04; }
+        .yellow-sunny h2 { color: #713f12; border-bottom: 1px solid #facc15; }
+        .yellow-sunny .section { padding: 5px; }
+        .yellow-sunny .job-title { color: #713f12; }
+        .yellow-sunny .date { color: #ca8a04; }
+
+        /* 风格11：青色清新 */
+        .cyan-fresh .sidebar { background: #cffafe; color: #164e63; }
+        .cyan-fresh h1 { color: #164e63; }
+        .cyan-fresh .title { color: #0e7490; }
+        .cyan-fresh h2 { color: #164e63; border-bottom: 1px solid #67e8f9; }
+        .cyan-fresh .section { padding: 5px; }
+        .cyan-fresh .job-title { color: #164e63; }
+        .cyan-fresh .date { color: #0e7490; }
+
+        /* 风格12：玫瑰粉 */
+        .pink-rose .sidebar { background: #fce7f3; color: #831843; }
+        .pink-rose h1 { color: #831843; }
+        .pink-rose .title { color: #db2777; }
+        .pink-rose h2 { color: #831843; border-bottom: 1px solid #f9a8d4; }
+        .pink-rose .section { padding: 5px; }
+        .pink-rose .job-title { color: #831843; }
+        .pink-rose .date { color: #db2777; }
+		
+		/* 风格13：极简风格（黑白配） */
+		.mono-minimal .sidebar {
+			background: #ffffff;
+			color: #000000;
+		}
+		.mono-minimal h1 {
+			color: #000000;
+			font-weight: 700;
+			border-bottom: 2px solid #000000;
+			padding-bottom: 3px;
+		}
+		.mono-minimal .title {
+			color: #333333;
+		}
+		.mono-minimal h2 {
+			color: #000000;
+			border-bottom: 1px solid #cccccc;
+			padding-bottom: 2px;
+		}
+		.mono-minimal .section {
+			padding: 5px;
+		}
+		.mono-minimal .job-title {
+			color: #000000;
+		}
+		.mono-minimal .date {
+			color: #666666;
+		}
+		.mono-minimal .main-content {
+			background: #ffffff;
+		}
+
+		/* 风格14：绚丽风格（颜色多种） */
+		.vibrant-color .sidebar {
+			background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+			color: #ffffff;
+		}
+		.vibrant-color h1 {
+			color: #ffe66d;
+			text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+		}
+		.vibrant-color .title {
+			color: #ffffff;
+		}
+		.vibrant-color h2 {
+			color: #ff6b6b;
+			border-bottom: 2px dotted #4ecdc4;
+		}
+		.vibrant-color .section {
+			padding: 5px;
+			background: rgba(255, 255, 255, 0.9);
+			border-radius: 4px;
+			margin-bottom: 8px;
+		}
+		.vibrant-color .job-title {
+			color: #2a9d8f;
+		}
+		.vibrant-color .date {
+			color: #e76f51;
+		}
+		.vibrant-color .main-content {
+			background: #f7f7f7;
+		}
+
+		/* 风格15：忧郁风格 */
+		.melancholy-blue .sidebar {
+			background: #2b2d42;
+			color: #d8e2dc;
+		}
+		.melancholy-blue h1 {
+			color: #8d99ae;
+			font-weight: 500;
+		}
+		.melancholy-blue .title {
+			color: #b8c0d1;
+		}
+		.melancholy-blue h2 {
+			color: #d8e2dc;
+			border-bottom: 1px dashed #8d99ae;
+		}
+		.melancholy-blue .section {
+			padding: 5px;
+			background: #353849;
+			color: #d8e2dc;
+			border-left: 3px solid #8d99ae;
+		}
+		.melancholy-blue .job-title {
+			color: #d8e2dc;
+		}
+		.melancholy-blue .date {
+			color: #b8c0d1;
+		}
+		.melancholy-blue .main-content {
+			background: #353849;
+		}
+
+		/* 风格16：奔放风格 */
+		.wild-free .sidebar {
+			background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="%23f4a261" d="M0 0h100v100H0z"/><path fill="%23e76f51" d="M50 0c27.6 0 50 22.4 50 50s-22.4 50-50 50S0 77.6 0 50 22.4 0 50 0z"/><path fill="%232a9d8f" d="M50 20c16.6 0 30 13.4 30 30s-13.4 30-30 30S20 66.6 20 50s13.4-30 30-30z"/></svg>') no-repeat center/cover;
+			color: #ffffff;
+		}
+		.wild-free h1 {
+			color: #ffffff;
+			text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+		}
+		.wild-free .title {
+			color: #f4a261;
+		}
+		.wild-free h2 {
+			color: #2a9d8f;
+			border-bottom: 2px solid #e76f51;
+		}
+		.wild-free .section {
+			padding: 5px;
+			background: rgba(255, 255, 255, 0.95);
+			border-radius: 4px;
+			margin-bottom: 8px;
+		}
+		.wild-free .job-title {
+			color: #2a9d8f;
+		}
+		.wild-free .date {
+			color: #e76f51;
+		}
+		.wild-free .main-content {
+			background: #f7f7f7;
+		}
+
+        .export-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            background: #68d391;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .export-btn:hover {
+            background: #5cb87a;
+        }
+		
+		/* 确保字体大小应用到整个简历容器 */
+		.resume-container {
+			font-size: 14px; /* 默认值，与select的selected一致 */
+		}
+		
+		.item-title {
+			font-size: 25px
+		}
+		
+		/* 删除按钮样式 */
+		.delete-btn {
+			background: #ef4444;
+			color: white;
+			border: none;
+			padding: 3px 6px;
+			border-radius: 4px;
+			cursor: pointer;
+			margin-top: 5px;
+			font-size: 12px;
+		}
+
+		.delete-btn:disabled {
+			background: #d1d5db;
+			cursor: not-allowed;
+		}
+
+		/* 调整条目布局以容纳删除按钮 */
+		.education-entry, .experience-entry, .language-entry {
+			position: relative;
+			margin-bottom: 8px;
+		}
+
+		.education-entry .delete-btn, .experience-entry .delete-btn, .language-entry .delete-btn {
+			position: absolute;
+			right: 0;
+			top: 50%;
+			transform: translateY(-50%);
+		}
+		
+		/* 可排序部分的容器 */
+		#sortable-sections {
+			margin-top: 10px;
+		}
+    </style>
+</head>
+<body>
+    <div class="editor">
+        <h2>免费简历生成器</h2>
+		<div class="form-group">
+			<label><i class="fas fa-image"></i> 上传头像<input type="checkbox" id="showImage" class="checkbox" checked onchange="updatePreview()"> 显示</label>
+			<input type="file" id="avatar-upload" accept="image/*">
+		</div>
+        <div class="form-group">
+            <label>选择样式</label>
+            <select id="style-select" onchange="updatePreview()">
+                <option value="blue-crisp layout-double">简洁蓝 (双栏)</option>
+                <option value="orange-warm layout-double">温暖橙 (双栏)</option>
+                <option value="gray-minimal layout-single">极简灰 (单栏)</option>
+                <option value="green-forest layout-single">森林绿 (单栏)</option>
+                <option value="purple-dream layout-single">紫色梦幻 (单栏)</option>
+                <option value="red-classic layout-double">经典红 (双栏)</option>
+                <option value="blue-ocean layout-double">海洋蓝 (双栏)</option>
+                <option value="black-modern layout-single">现代黑 (单栏)</option>
+                <option value="yellow-sunny layout-single">阳光黄 (单栏)</option>
+                <option value="cyan-fresh layout-double">青色清新 (双栏)</option>
+                <option value="pink-rose layout-double">玫瑰粉 (双栏)</option>
+				<option value="mono-minimal layout-single">极简风格 (单栏)</option>
+				<option value="vibrant-color layout-double">绚丽风格 (双栏)</option>
+				<option value="melancholy-blue layout-single">忧郁风格 (单栏)</option>
+				<option value="wild-free layout-double">奔放风格 (双栏)</option>
+            </select>
+        </div>
+		<div class="form-group">
+			<label>字体大小</label>
+			<select id="font-size-select" onchange="updateFontSize()">
+				<option value="6">6px</option>
+				<option value="7">7px</option>
+				<option value="8">8px</option>
+				<option value="9">9px</option>
+				<option value="10">10px</option>
+				<option value="11">11px</option>
+				<option value="12">12px</option>
+				<option value="13">13px</option>
+				<option value="14" selected>14px</option>
+				<option value="15">15px</option>
+				<option value="16">16px</option>
+				<option value="17">17px</option>
+				<option value="18">18px</option>
+				<option value="20">20px</option>
+				<option value="22">22px</option>
+			</select>
+		</div>
+        <div class="form-group">
+            <label>个人信息</label>
+            <div class="personal-group">
+                <div class="personal-input">
+                    <label>姓名</label>
+                    <input type="text" id="name" value="张三">
+                </div>
+                <div class="personal-input">
+                    <label>性别</label>
+                    <input type="text" id="gender" value="男">
+                </div>
+                <div class="personal-input">
+                    <label>出生年月</label>
+                    <input type="text" id="birth" value="1995-05-15">
+                </div>
+                <div class="personal-input">
+                    <label>籍贯</label>
+                    <input type="text" id="hometown" value="北京市">
+                </div>
+                <div class="personal-input">
+                    <label>电话</label>
+                    <input type="text" id="phone" value="123-4567-8901">
+                </div>
+                <div class="personal-input">
+                    <label>Email</label>
+                    <input type="text" id="email" value="zhangsan@example.com">
+                </div>
+                <div class="personal-input">
+                    <label>工作年限</label>
+                    <input type="text" id="workYears" value="5年">
+                </div>
+                <div class="personal-input">
+                    <label>婚姻状况</label>
+                    <input type="text" id="marital" value="未婚">
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>求职岗位</label>
+            <input type="text" id="jobTitle" value="前端开发工程师">
+        </div>
+        <div id="sortable-sections">
+			<div class="form-group" data-id="education" id="education-group">
+				<label>教育背景 <input type="checkbox" id="showEducation" class="checkbox" checked onchange="updatePreview()"> 显示
+					<button class="order-btn" onclick="moveUp(this)">↑</button>
+					<button class="order-btn" onclick="moveDown(this)">↓</button></label>
+				<div class="education-entry">
+					<input type="text" class="edu-school" placeholder="学校" value="北京大学">
+					<input type="text" class="edu-major" placeholder="专业" value="计算机科学与技术（硕士）">
+					<input type="text" class="edu-date" placeholder="时间" value="2016.09 - 2020.06">
+					<button class="delete-btn" onclick="deleteEducation(this)" disabled>删除</button>
+				</div>
+				<button class="add-btn" onclick="addEducation()">添加教育背景</button>
+			</div>
+            <div class="form-group" data-id="experience" id="experience-group">
+                <label>工作经历 <input type="checkbox" id="showExperience" class="checkbox" checked onchange="updatePreview()"> 显示
+                    <button class="order-btn" onclick="moveUp(this)">↑</button>
+                    <button class="order-btn" onclick="moveDown(this)">↓</button></label>
+                <div class="experience-entry">
+                    <input type="text" class="exp-title" placeholder="职位" value="高级前端开发工程师">
+                    <input type="text" class="exp-date" placeholder="时间 • 公司" value="2022.06 - 至今 • 某科技公司">
+                    <textarea class="exp-details" placeholder="职责">领导前端团队开发公司核心产品
+优化网站性能，提升30%加载速度
+实施响应式设计，提高移动端用户体验</textarea>
+					<button class="delete-btn" onclick="deleteExperience(this)" disabled>删除</button>
+                </div>
+                <button class="add-btn" onclick="addExperience()">添加经历</button>
+            </div>
+            <div class="form-group" data-id="skills">
+                <label>专业技能 <input type="checkbox" id="showSkills" class="checkbox" checked onchange="updatePreview()"> 显示
+                    <button class="order-btn" onclick="moveUp(this)">↑</button>
+                    <button class="order-btn" onclick="moveDown(this)">↓</button></label>
+				<textarea id="skills" class="skills-details" placeholder="填写专业技能，支持多行显示"></textarea>
+            </div>
+            <div class="form-group" data-id="hobbies">
+                <label>兴趣爱好 <input type="checkbox" id="showHobbies" class="checkbox" checked onchange="updatePreview()"> 显示
+                    <button class="order-btn" onclick="moveUp(this)">↑</button>
+                    <button class="order-btn" onclick="moveDown(this)">↓</button></label>
+				<textarea id="hobbies" class="hobbies-details" placeholder="填写兴趣爱好，支持多行显示"></textarea>
+            </div>
+            <div class="form-group" data-id="evaluation">
+                <label>自我评价 <input type="checkbox" id="showEvaluation" class="checkbox" checked onchange="updatePreview()"> 显示
+                    <button class="order-btn" onclick="moveUp(this)">↑</button>
+                    <button class="order-btn" onclick="moveDown(this)">↓</button></label>
+                <textarea id="evaluation" class="evaluation-details">拥有5年前端开发经验，专注于创建用户友好的Web应用。热爱技术创新，善于团队协作，能够快速学习新技术并应用到实际项目中。</textarea>
+            </div>
+            <div class="form-group" data-id="languages" id="language-group">
+                <label>外语等级 <input type="checkbox" id="showLanguages" class="checkbox" checked onchange="updatePreview()"> 显示
+                    <button class="order-btn" onclick="moveUp(this)">↑</button>
+                    <button class="order-btn" onclick="moveDown(this)">↓</button></label>
+                <div class="language-entry">
+                    <input type="text" class="lang-name" placeholder="语种" value="英语">
+                    <input type="text" class="lang-level" placeholder="等级" value="CET-6">
+					<button class="delete-btn" onclick="deleteLanguage(this)" disabled>删除</button>
+                </div>
+                <button class="add-btn" onclick="addLanguage()">添加语种</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="preview">
+        <button class="export-btn" onclick="exportToPDF()">导出为PDF</button>
+        <div class="resume-container" id="resume">
+            <div class="sidebar" id="personal-info-all">
+				<div class="avatar-container" id="avatar-container">
+					<img id="preview-avatar" src="" alt="头像" style="display: none;">
+				</div>
+				<div id="personal-info"></div>
+			</div>	
+            <div class="main-content" id="main-sections"></div>
+        </div>
+    </div>
+
+    <script>
+        // 可排序部分的ID顺序
+        let sectionOrder = ['education', 'experience', 'skills', 'hobbies', 'evaluation', 'languages'];
+		
+		// 保存数据到 localStorage
+		function saveData() {
+			const data = {
+				name: document.getElementById('name').value,
+				gender: document.getElementById('gender').value,
+				birth: document.getElementById('birth').value,
+				hometown: document.getElementById('hometown').value,
+				phone: document.getElementById('phone').value,
+				email: document.getElementById('email').value,
+				workYears: document.getElementById('workYears').value,
+				marital: document.getElementById('marital').value,
+				jobTitle: document.getElementById('jobTitle').value,
+				style: document.getElementById('style-select').value,
+				fontSize: document.getElementById('font-size-select').value,
+				education: Array.from(document.querySelectorAll('.education-entry')).map(entry => ({
+					school: entry.querySelector('.edu-school').value,
+					major: entry.querySelector('.edu-major').value,
+					date: entry.querySelector('.edu-date').value
+				})),
+				experience: Array.from(document.querySelectorAll('.experience-entry')).map(entry => ({
+					title: entry.querySelector('.exp-title').value,
+					date: entry.querySelector('.exp-date').value,
+					details: entry.querySelector('.exp-details').value
+				})),
+				skills: document.getElementById('skills').value,
+				hobbies: document.getElementById('hobbies').value,
+				evaluation: document.getElementById('evaluation').value,
+				languages: Array.from(document.querySelectorAll('.language-entry')).map(entry => ({
+					name: entry.querySelector('.lang-name').value,
+					level: entry.querySelector('.lang-level').value
+				})),
+				showEducation: document.getElementById('showEducation').checked,
+				showExperience: document.getElementById('showExperience').checked,
+				showSkills: document.getElementById('showSkills').checked,
+				showHobbies: document.getElementById('showHobbies').checked,
+				showEvaluation: document.getElementById('showEvaluation').checked,
+				showLanguages: document.getElementById('showLanguages').checked,
+				showImage: document.getElementById('showImage').checked,
+				sectionOrder: sectionOrder,
+				avatar: document.getElementById('preview-avatar').src // 保存头像数据
+			};
+			localStorage.setItem('resumeData', JSON.stringify(data));
+		}
+		
+		// 从 localStorage 加载数据
+		function loadData() {
+			const savedData = localStorage.getItem('resumeData');
+			if (savedData) {
+				const data = JSON.parse(savedData);
+				document.getElementById('name').value = data.name || '';
+				document.getElementById('gender').value = data.gender || '';
+				document.getElementById('birth').value = data.birth || '';
+				document.getElementById('hometown').value = data.hometown || '';
+				document.getElementById('phone').value = data.phone || '';
+				document.getElementById('email').value = data.email || '';
+				document.getElementById('workYears').value = data.workYears || '';
+				document.getElementById('marital').value = data.marital || '';
+				document.getElementById('jobTitle').value = data.jobTitle || '';
+				document.getElementById('style-select').value = data.style || 'blue-crisp layout-double';
+				document.getElementById('font-size-select').value = data.fontSize || '12';
+				document.getElementById('skills').value = data.skills || '';
+				document.getElementById('hobbies').value = data.hobbies || '';
+				document.getElementById('evaluation').value = data.evaluation || '';
+				document.getElementById('showEducation').checked = data.showEducation !== false;
+				document.getElementById('showExperience').checked = data.showExperience !== false;
+				document.getElementById('showSkills').checked = data.showSkills !== false;
+				document.getElementById('showHobbies').checked = data.showHobbies !== false;
+				document.getElementById('showEvaluation').checked = data.showEvaluation !== false;
+				document.getElementById('showLanguages').checked = data.showLanguages !== false;
+				document.getElementById('showImage').checked = data.showImage !== false;
+				sectionOrder = data.sectionOrder || sectionOrder;
+				
+				// 恢复头像
+				if (data.avatar) {
+					const avatarImg = document.getElementById('preview-avatar');
+					avatarImg.src = data.avatar;
+					avatarImg.style.display = 'block';
+				}
+
+				// 恢复教育背景
+				const eduGroup = document.getElementById('education-group');
+				eduGroup.querySelectorAll('.education-entry').forEach((entry, index) => index > 0 && entry.remove());
+				data.education.forEach((edu, index) => {
+					if (index === 0) {
+						const firstEntry = eduGroup.querySelector('.education-entry');
+						firstEntry.querySelector('.edu-school').value = edu.school;
+						firstEntry.querySelector('.edu-major').value = edu.major;
+						firstEntry.querySelector('.edu-date').value = edu.date;
+					} else {
+						addEducation(edu.school, edu.major, edu.date);
+					}
+				});
+
+				// 恢复工作经历
+				const expGroup = document.getElementById('experience-group');
+				expGroup.querySelectorAll('.experience-entry').forEach((entry, index) => index > 0 && entry.remove());
+				data.experience.forEach((exp, index) => {
+					if (index === 0) {
+						const firstEntry = expGroup.querySelector('.experience-entry');
+						firstEntry.querySelector('.exp-title').value = exp.title;
+						firstEntry.querySelector('.exp-date').value = exp.date;
+						firstEntry.querySelector('.exp-details').value = exp.details;
+					} else {
+						addExperience(exp.title, exp.date, exp.details);
+					}
+				});
+
+				// 恢复外语等级
+				const langGroup = document.getElementById('language-group');
+				langGroup.querySelectorAll('.language-entry').forEach((entry, index) => index > 0 && entry.remove());
+				data.languages.forEach((lang, index) => {
+					if (index === 0) {
+						const firstEntry = langGroup.querySelector('.language-entry');
+						firstEntry.querySelector('.lang-name').value = lang.name;
+						firstEntry.querySelector('.lang-level').value = lang.level;
+					} else {
+						addLanguage(lang.name, lang.level);
+					}
+				});
+
+				// 恢复排序
+				const sortable = document.getElementById('sortable-sections');
+				const sections = Array.from(sortable.children);
+				sections.sort((a, b) => sectionOrder.indexOf(a.dataset.id) - sectionOrder.indexOf(b.dataset.id));
+				sections.forEach(section => sortable.appendChild(section));
+				
+				// 更新删除按钮状态
+				updateDeleteButtons('education-group', '.education-entry');
+				updateDeleteButtons('experience-group', '.experience-entry');
+				updateDeleteButtons('language-group', '.language-entry');
+			}
+		}
+		
+		// 双栏布局时保证左右高度对齐
+		function syncDivHeights() {
+			const div1 = document.querySelector('.sidebar');
+			const div2 = document.querySelector('.main-content');
+			const styleValue = document.getElementById('style-select').value.split(' ');
+			const layout = styleValue[1];
+			
+			if (layout === 'layout-double') {
+				if (div1 && div2) {
+					// 重置 div2 高度以避免影响
+					div1.style.height = 'auto';
+					// 获取 div1 的高度
+					const div2Height = div2.offsetHeight;
+					// 设置 div2 的高度
+					div1.style.height = `${div2Height}px`;
+				} 
+			} else {
+				if (div1 && div2) {
+					div1.style.height = 'auto';
+					div2.style.height = 'auto';
+				}
+			}
+		}
+		
+		// 计算A4高度的函数
+		function calculateA4Dimensions() {
+			const dpi = window.devicePixelRatio * 96; // 标准96dpi，调整为设备像素比率
+			const a4WidthInches = 8.5; // A4纸宽度（letter尺寸）
+			const a4HeightInches = 11; // A4纸高度
+			const marginInches = 0.3 * 2; // 上下/左右边距总和
+			const effectiveWidthInches = a4WidthInches;
+			const effectiveHeightInches = a4HeightInches;
+			return {
+				width: Math.round(effectiveWidthInches * dpi), // 宽度像素
+				height: Math.round(effectiveHeightInches * dpi) // 高度像素
+			};
+		}
+		
+        // 实时更新预览
+        function updatePreview() {
+			
+            const styleValue = document.getElementById('style-select').value.split(' ');
+            const style = styleValue[0];
+            const layout = styleValue[1];
+            const resume = document.getElementById('resume');
+            resume.className = 'resume-container ' + style + ' ' + layout;
+			const dimensions = calculateA4Dimensions();
+			resume.style.width = `${dimensions.width}px`;
+			resume.style.minHeight = `${dimensions.height}px`;
+			
+			const sidebar = resume.querySelector('.sidebar');
+			const mainContent = resume.querySelector('.main-content');
+			if (resume.classList.contains('layout-double')) {
+				sidebar.style.minHeight = `${dimensions.height}px`;
+				mainContent.style.minHeight = `${dimensions.height}px`;
+			} else {
+				sidebar.style.minHeight = 'auto';
+			}
+
+            // 个人信息（必显示）
+			const person_name = document.getElementById('name').value;
+			const person_gender = document.getElementById('gender').value;
+			const person_birth = document.getElementById('birth').value;
+			const person_hometown = document.getElementById('hometown').value;
+			const person_phone = document.getElementById('phone').value;
+			const person_email = document.getElementById('email').value;
+			const person_word_years = document.getElementById('workYears').value;
+			const person_marital = document.getElementById('marital').value;
+			const person_image = document.getElementById('avatar-upload').src;
+
+            // 求职岗位（必显示）
+			const preview_job = document.getElementById('jobTitle').value;
+
+            // 根据顺序动态生成主内容区
+            const personalInfo = document.getElementById('personal-info');
+			const mainSections = document.getElementById('main-sections');
+            mainSections.innerHTML = '';
+			personalInfo.innerHTML = '';
+			
+			if (!(document.getElementById('showImage').checked)){
+				document.getElementById('preview-avatar').style.display = 'none';
+			} else {
+				document.getElementById('preview-avatar').style.display = 'block';
+			}
+			
+			// 添加个人信息和岗位信息
+			if (layout === 'layout-double') {
+				personalInfo.innerHTML += `<h1 id="preview-name" style="font-size:30px;">${person_name}</h1>`;
+				personalInfo.innerHTML += `<div class="basic-info">`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul"><i class="fas fa-suitcase"> 求职岗位： ${preview_job}</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul"><i class="fas fa-venus-mars"></i> 性别: ${person_gender}</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul"><i class="fas fa-birthday-cake"></i> 出生年月: ${person_birth}</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul"><i class="fas fa-home"></i> 籍贯: ${person_hometown}</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul"><i class="fas fa-phone"></i> 电话: ${person_phone}</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul"><i class="fas fa-envelope"></i> Email: ${person_email}</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul"><i class="fas fa-briefcase"></i> 工作年限: ${person_word_years}</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul"><i class="fas fa-ring"></i> 婚姻状况: ${person_marital}</ul>`;
+				personalInfo.innerHTML += `</div>`;
+			} else if (layout === 'layout-single') {
+				personalInfo.innerHTML += `<h1 id="preview-name" style="font-size:30px;">${person_name}</h1>`;
+				personalInfo.innerHTML += `<div class="basic-info">`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul1"><i class="fas fa-suitcase"> 求职岗位： ${preview_job}</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul1">`;
+				personalInfo.innerHTML += `<span class="personal-info-span"><i class="fas fa-venus-mars"></i> 性别: ${person_gender}</span>`;
+				personalInfo.innerHTML += `<span class="personal-info-span"><i class="fas fa-birthday-cake"></i> 出生年月: ${person_birth}</span>`;
+				personalInfo.innerHTML += `</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul1">`;
+				personalInfo.innerHTML += `<span class="personal-info-span"><i class="fas fa-home"></i> 籍贯: ${person_hometown}</span>`;
+				personalInfo.innerHTML += `<span class="personal-info-span"><i class="fas fa-phone"></i> 电话: ${person_phone}</span>`;
+				personalInfo.innerHTML += `</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul1">`;
+				personalInfo.innerHTML += `<span class="personal-info-span"><i class="fas fa-envelope"></i> Email: ${person_email}</span>`;
+				personalInfo.innerHTML += `</ul>`;
+				personalInfo.innerHTML += `<ul class="personal-info-ul1">`;
+				personalInfo.innerHTML += `<span class="personal-info-span"><i class="fas fa-briefcase"></i> 工作年限: ${person_word_years}</span>`;
+				personalInfo.innerHTML += `<span class="personal-info-span"><i class="fas fa-ring"></i> 婚姻状况: ${person_marital}</span>`;
+				personalInfo.innerHTML += `</ul>`;
+				personalInfo.innerHTML += `</div>`;
+			}
+
+            sectionOrder.forEach(id => {
+                if (id === 'education' && document.getElementById('showEducation').checked) {
+					const educations = document.querySelectorAll('.education-entry');
+					let eduHtml = '';
+					educations.forEach(edu => {
+						const school = edu.querySelector('.edu-school').value;
+						const major = edu.querySelector('.edu-major').value;
+						const date = edu.querySelector('.edu-date').value;
+						eduHtml += `<p>${school} • ${major} • ${date}</p>`;
+					});
+					mainSections.innerHTML += `
+						<div class="section">
+							<h2 class="item-title"><i class="fas fa-graduation-cap"></i> 教育背景</h2>
+							${eduHtml}
+						</div>
+					`;
+                } else if (id === 'experience' && document.getElementById('showExperience').checked) {
+                    const experiences = document.querySelectorAll('.experience-entry');
+                    let expHtml = '';
+                    experiences.forEach(exp => {
+                        const title = exp.querySelector('.exp-title').value;
+                        const date = exp.querySelector('.exp-date').value;
+                        const details = exp.querySelector('.exp-details').value.split('\n').map(d => `<li>${d}</li>`).join('');
+                        expHtml += `
+                            <div class="experience">
+                                <div class="job-title">${date}--${title}</div>
+								<div class="work-details">
+									<div>工作内容和业绩:</div>
+									<ul>${details}</ul>
+								</div>
+                            </div>
+                        `;
+                    });
+                    mainSections.innerHTML += `
+                        <div class="section">
+                            <h2 class="item-title"><i class="fas fa-suitcase"></i> 工作经历</h2>
+                            ${expHtml}
+                        </div>
+                    `;
+                } else if (id === 'skills' && document.getElementById('showSkills').checked) {
+					const details = document.querySelector('.skills-details').value.split('\n').map(d => `<li>${d}</li>`).join('');
+                    mainSections.innerHTML += `
+                        <div class="section">
+                            <h2 class="item-title"><i class="fas fa-tools"></i> 专业技能</h2>
+							<ul>${details}</ul>
+                        </div>
+                    `;
+                } else if (id === 'hobbies' && document.getElementById('showHobbies').checked) {
+					const details = document.querySelector('.hobbies-details').value.split('\n').map(d => `<li>${d}</li>`).join('');
+                    mainSections.innerHTML += `
+                        <div class="section">
+                            <h2 class="item-title"><i class="fas fa-heart"></i> 兴趣爱好</h2>
+							<ul>${details}</ul>
+                        </div>
+                    `;
+                } else if (id === 'evaluation' && document.getElementById('showEvaluation').checked) {
+					const details = document.querySelector('.evaluation-details').value.split('\n').map(d => `<li>${d}</li>`).join('');
+                    mainSections.innerHTML += `
+                        <div class="section">
+                            <h2 class="item-title"><i class="fas fa-comment"></i> 自我评价</h2>
+							<ul>${details}</ul>
+                        </div>
+                    `;
+                } else if (id === 'languages' && document.getElementById('showLanguages').checked) {
+                    const languages = document.querySelectorAll('.language-entry');
+                    let langHtml = '';
+                    languages.forEach(lang => {
+                        const name = lang.querySelector('.lang-name').value;
+                        const level = lang.querySelector('.lang-level').value;
+                        langHtml += `<li>${name}: ${level}</li>`;
+                    });
+                    mainSections.innerHTML += `
+                        <div class="section">
+                            <h2 class="item-title"><i class="fas fa-language"></i> 外语等级</h2>
+                            <ul>${langHtml}</ul>
+                        </div>
+                    `;
+                }
+            });
+			syncDivHeights();
+			saveData(); // 每次更新预览时保存数据
+        }
+
+		// 添加教育背景
+		function addEducation(school = '', major = '', date = '') {
+			const eduGroup = document.getElementById('education-group');
+			const newEdu = document.createElement('div');
+			newEdu.className = 'education-entry';
+			newEdu.innerHTML = `
+				<input type="text" class="edu-school" placeholder="学校" value="${school}">
+				<input type="text" class="edu-major" placeholder="专业" value="${major}">
+				<input type="text" class="edu-date" placeholder="时间" value="${date}">
+				<button class="delete-btn" onclick="deleteEducation(this)">删除</button>
+			`;
+			eduGroup.insertBefore(newEdu, eduGroup.querySelector('.add-btn'));
+			newEdu.querySelectorAll('input').forEach(el => el.addEventListener('input', () => { updatePreview(); saveData(); }));
+			updateDeleteButtons('education-group', '.education-entry');
+			updatePreview();
+		}
+
+		// 添加工作经历
+		function addExperience(title = '', date = '', details = '') {
+			const expGroup = document.getElementById('experience-group');
+			const newExp = document.createElement('div');
+			newExp.className = 'experience-entry';
+			newExp.innerHTML = `
+				<input type="text" class="exp-title" placeholder="职位" value="${title}">
+				<input type="text" class="exp-date" placeholder="时间 • 公司" value="${date}">
+				<textarea class="exp-details" placeholder="职责">${details}</textarea>
+				<button class="delete-btn" onclick="deleteExperience(this)">删除</button>
+			`;
+			expGroup.insertBefore(newExp, expGroup.querySelector('.add-btn'));
+			newExp.querySelectorAll('input, textarea').forEach(el => el.addEventListener('input', () => { updatePreview(); saveData(); }));
+			updateDeleteButtons('experience-group', '.experience-entry');
+			updatePreview();
+		}
+
+		// 添加外语等级
+		function addLanguage(name = '', level = '') {
+			const langGroup = document.getElementById('language-group');
+			const newLang = document.createElement('div');
+			newLang.className = 'language-entry';
+			newLang.innerHTML = `
+				<input type="text" class="lang-name" placeholder="语种" value="${name}">
+				<input type="text" class="lang-level" placeholder="等级" value="${level}">
+				<button class="delete-btn" onclick="deleteLanguage(this)">删除</button>
+			`;
+			langGroup.insertBefore(newLang, langGroup.querySelector('.add-btn'));
+			newLang.querySelectorAll('input').forEach(el => el.addEventListener('input', () => { updatePreview(); saveData(); }));
+			updateDeleteButtons('language-group', '.language-entry');
+			updatePreview();
+		}
+
+		// 删除教育背景
+		function deleteEducation(button) {
+			const entry = button.closest('.education-entry');
+			entry.remove();
+			updateDeleteButtons('education-group', '.education-entry');
+			updatePreview();
+			saveData();
+		}
+
+		// 删除工作经历
+		function deleteExperience(button) {
+			const entry = button.closest('.experience-entry');
+			entry.remove();
+			updateDeleteButtons('experience-group', '.experience-entry');
+			updatePreview();
+			saveData();
+		}
+
+		// 删除外语等级
+		function deleteLanguage(button) {
+			const entry = button.closest('.language-entry');
+			entry.remove();
+			updateDeleteButtons('language-group', '.language-entry');
+			updatePreview();
+			saveData();
+		}
+
+		// 更新删除按钮状态（至少保留一条记录）
+		function updateDeleteButtons(groupId, entryClass) {
+			const group = document.getElementById(groupId);
+			const entries = group.querySelectorAll(entryClass);
+			entries.forEach((entry, index) => {
+				const deleteBtn = entry.querySelector('.delete-btn');
+				deleteBtn.disabled = entries.length === 1;
+			});
+		}
+
+        // 向上移动
+        function moveUp(button) {
+            const section = button.closest('.form-group');
+            const index = sectionOrder.indexOf(section.dataset.id);
+            if (index > 0) {
+                [sectionOrder[index], sectionOrder[index - 1]] = [sectionOrder[index - 1], sectionOrder[index]];
+                const prevSection = section.previousElementSibling;
+                section.parentNode.insertBefore(section, prevSection);
+                updatePreview();
+            }
+        }
+
+        // 向下移动
+        function moveDown(button) {
+            const section = button.closest('.form-group');
+            const index = sectionOrder.indexOf(section.dataset.id);
+            if (index < sectionOrder.length - 1) {
+                [sectionOrder[index], sectionOrder[index + 1]] = [sectionOrder[index + 1], sectionOrder[index]];
+                const nextSection = section.nextElementSibling.nextElementSibling;
+                if (nextSection) {
+                    section.parentNode.insertBefore(section, nextSection);
+                } else {
+                    section.parentNode.appendChild(section);
+                }
+                updatePreview();
+            }
+        }
+
+        // 监听所有输入变化
+		document.querySelectorAll('input, textarea, select').forEach(el => el.addEventListener('input', () => { updatePreview(); saveData(); }));
+		document.querySelectorAll('.checkbox').forEach(el => el.addEventListener('change', () => { updatePreview(); saveData(); }));
+		
+		// 监听头像上传
+		document.getElementById('avatar-upload').addEventListener('change', function(event) {
+			const file = event.target.files[0];
+			if (file.size > 1048576) {
+				alert('图片大小超过1MB，请选择更小的图片！');
+				event.target.value = ''; // 清空输入框
+				return;
+			}
+			if (file) {
+				const reader = new FileReader();
+				reader.onload = function(e) {
+					const avatarImg = document.getElementById('preview-avatar');
+					avatarImg.src = e.target.result;
+					avatarImg.style.display = 'block';
+					updatePreview();
+					saveData();
+					
+				};
+				reader.readAsDataURL(file);
+			}
+		});
+
+        // 导出为PDF
+        function exportToPDF() {
+            const element = document.getElementById('resume');
+            const opt = {
+                margin: 0,
+                filename: document.getElementById('name').value + '_简历.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+					scale: 2, // 高分辨率渲染
+					useCORS: true // 支持跨域图片（如头像）
+				},
+                jsPDF: { 
+					unit: 'in', 
+					format: 'letter', // 8.5in x 11in
+					orientation: 'portrait',
+					putOnlyUsedFonts: true,
+					compress: true // 压缩PDF
+				}
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+		
+		// 更新字体大小
+		function updateFontSize() {
+			const fontSize = document.getElementById('font-size-select').value;
+			const resume = document.getElementById('resume');
+			resume.style.fontSize = `${fontSize}px`;
+			updatePreview(); // 同步更新预览
+		}
+
+        // 初始化预览
+		// 页面加载时恢复数据
+		window.onload = function() {
+			loadData();
+			updateFontSize();
+			const dimensions = calculateA4Dimensions();
+			resume.style.width = `${dimensions.width}px`;
+			resume.style.minHeight = `${dimensions.height}px`;
+			updatePreview();
+		};
+		
+		// 监听窗口大小变化以动态调整高度
+		window.addEventListener('resize', () => {
+			const resume = document.getElementById('resume');
+			const dimensions = calculateA4Dimensions();
+			resume.style.width = `${dimensions.width}px`;
+			resume.style.minHeight = `${dimensions.height}px`;
+			const sidebar = resume.querySelector('.sidebar');
+			const mainContent = resume.querySelector('.main-content');
+			if (resume.classList.contains('layout-double')) {
+				sidebar.style.minHeight = `${dimensions.height}px`;
+				mainContent.style.minHeight = `${dimensions.height}px`;
+			}
+		});
+        //updatePreview();
+    </script>
+</body>
+</html>
