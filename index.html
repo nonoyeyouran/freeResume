@@ -1093,20 +1093,38 @@
                     `;
                 } else if (id === 'hobbies' && document.getElementById('showHobbies').checked) {
 					const details = document.querySelector('.hobbies-details').value.split('\n').map(d => `<li style="page-break-inside: avoid;">${d}</li>`).join('');
-                    personalInfo.innerHTML += `
-                        <div class="section" style="page-break-inside: avoid;">
-                            <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-heart"></i> 兴趣爱好</h2>
-							<ul style="page-break-inside: avoid;">${details}</ul>
-                        </div>
-                    `;
+					if (layout === 'layout-single') {
+					    mainSections.innerHTML += `
+                            <div class="section" style="page-break-inside: avoid;">
+                                <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-heart"></i> 兴趣爱好</h2>
+                                <ul style="page-break-inside: avoid;">${details}</ul>
+                            </div>
+                        `;
+					} else if (layout === 'layout-double') {
+                        personalInfo.innerHTML += `
+                            <div class="section" style="page-break-inside: avoid;">
+                                <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-heart"></i> 兴趣爱好</h2>
+                                <ul style="page-break-inside: avoid;">${details}</ul>
+                            </div>
+                        `;
+                    }
                 } else if (id === 'evaluation' && document.getElementById('showEvaluation').checked) {
 					const details = document.querySelector('.evaluation-details').value.split('\n').map(d => `<li style="page-break-inside: avoid;">${d}</li>`).join('');
-                    personalInfo.innerHTML += `
-                        <div class="section" style="page-break-inside: avoid;">
-                            <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-comment"></i> 自我评价</h2>
-							<ul style="page-break-inside: avoid;">${details}</ul>
-                        </div>
-                    `;
+					if (layout === 'layout-single') {
+					    mainSections.innerHTML += `
+                            <div class="section" style="page-break-inside: avoid;">
+                                <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-comment"></i> 自我评价</h2>
+                                <ul style="page-break-inside: avoid;">${details}</ul>
+                            </div>
+                        `;
+					} else if (layout === 'layout-double') {
+                        personalInfo.innerHTML += `
+                            <div class="section" style="page-break-inside: avoid;">
+                                <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-comment"></i> 自我评价</h2>
+                                <ul style="page-break-inside: avoid;">${details}</ul>
+                            </div>
+                        `;
+                    }
                 } else if (id === 'languages' && document.getElementById('showLanguages').checked) {
                     const languages = document.querySelectorAll('.language-entry');
                     let langHtml = '';
@@ -1115,12 +1133,21 @@
                         const level = lang.querySelector('.lang-level').value;
                         langHtml += `<li style="page-break-inside: avoid;">${name}: ${level}</li>`;
                     });
-                    personalInfo.innerHTML += `
-                        <div class="section" style="page-break-inside: avoid;">
-                            <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-language"></i> 外语等级</h2>
-                            <ul style="page-break-inside: avoid;">${langHtml}</ul>
-                        </div>
-                    `;
+                    if (layout === 'layout-single') {
+                        mainSections.innerHTML += `
+                            <div class="section" style="page-break-inside: avoid;">
+                                <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-language"></i> 外语等级</h2>
+                                <ul style="page-break-inside: avoid;">${langHtml}</ul>
+                            </div>
+                        `;
+                    } else if (layout === 'layout-double') {
+                        personalInfo.innerHTML += `
+                            <div class="section" style="page-break-inside: avoid;">
+                                <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-language"></i> 外语等级</h2>
+                                <ul style="page-break-inside: avoid;">${langHtml}</ul>
+                            </div>
+                        `;
+                    }
                 }
             });
 			syncDivHeights();
