@@ -603,6 +603,19 @@
 		#sortable-sections {
 			margin-top: 10px;
 		}
+
+        /* 分页样式 */
+        .section, h1, h2, .experience, .education-entry, .language-entry, ul, li {
+            page-break-inside: avoid;
+        }
+        .section {
+            page-break-after: auto;
+        }
+        .page-break {
+            display: block;
+            height: 0;
+            page-break-before: always;
+        }
     </style>
     <script>
     var _hmt = _hmt || [];
@@ -1039,10 +1052,10 @@
 						const school = edu.querySelector('.edu-school').value;
 						const major = edu.querySelector('.edu-major').value;
 						const date = edu.querySelector('.edu-date').value;
-						eduHtml += `<p>${school} • ${major} • ${date}</p>`;
+						eduHtml += `<p style="page-break-inside: avoid;">${school} • ${major} • ${date}</p>`;
 					});
 					mainSections.innerHTML += `
-						<div class="section">
+						<div class="section" style="page-break-inside: avoid;">
 							<h2 class="item-title"><i class="fas fa-graduation-cap"></i> 教育背景</h2>
 							${eduHtml}
 						</div>
@@ -1053,45 +1066,45 @@
                     experiences.forEach(exp => {
                         const title = exp.querySelector('.exp-title').value;
                         const date = exp.querySelector('.exp-date').value;
-                        const details = exp.querySelector('.exp-details').value.split('\n').map(d => `<li>${d}</li>`).join('');
+                        const details = exp.querySelector('.exp-details').value.split('\n').map(d => `<li style="page-break-inside: avoid;">${d}</li>`).join('');
                         expHtml += `
-                            <div class="experience">
-                                <div class="job-title">${date}--${title}</div>
-								<div class="work-details">
-									<div>工作内容和业绩:</div>
-									<ul>${details}</ul>
+                            <div class="experience" style="page-break-inside: avoid;">
+                                <div class="job-title" style="page-break-inside: avoid;">${date}--${title}</div>
+								<div class="work-details" style="page-break-inside: avoid;">
+									<div style="page-break-inside: avoid;">工作内容和业绩:</div>
+									<ul style="page-break-inside: avoid;">${details}</ul>
 								</div>
                             </div>
                         `;
                     });
                     mainSections.innerHTML += `
-                        <div class="section">
-                            <h2 class="item-title"><i class="fas fa-suitcase"></i> 工作经历</h2>
+                        <div class="section" style="page-break-inside: avoid;">
+                            <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-suitcase"></i> 工作经历</h2>
                             ${expHtml}
                         </div>
                     `;
                 } else if (id === 'skills' && document.getElementById('showSkills').checked) {
-					const details = document.querySelector('.skills-details').value.split('\n').map(d => `<li>${d}</li>`).join('');
+					const details = document.querySelector('.skills-details').value.split('\n').map(d => `<li style="page-break-inside: avoid;">${d}</li>`).join('');
                     mainSections.innerHTML += `
-                        <div class="section">
-                            <h2 class="item-title"><i class="fas fa-tools"></i> 专业技能</h2>
-							<ul>${details}</ul>
+                        <div class="section" style="page-break-inside: avoid;">
+                            <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-tools"></i> 专业技能</h2>
+							<ul style="page-break-inside: avoid;">${details}</ul>
                         </div>
                     `;
                 } else if (id === 'hobbies' && document.getElementById('showHobbies').checked) {
-					const details = document.querySelector('.hobbies-details').value.split('\n').map(d => `<li>${d}</li>`).join('');
-                    mainSections.innerHTML += `
-                        <div class="section">
-                            <h2 class="item-title"><i class="fas fa-heart"></i> 兴趣爱好</h2>
-							<ul>${details}</ul>
+					const details = document.querySelector('.hobbies-details').value.split('\n').map(d => `<li style="page-break-inside: avoid;">${d}</li>`).join('');
+                    personalInfo.innerHTML += `
+                        <div class="section" style="page-break-inside: avoid;">
+                            <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-heart"></i> 兴趣爱好</h2>
+							<ul style="page-break-inside: avoid;">${details}</ul>
                         </div>
                     `;
                 } else if (id === 'evaluation' && document.getElementById('showEvaluation').checked) {
-					const details = document.querySelector('.evaluation-details').value.split('\n').map(d => `<li>${d}</li>`).join('');
-                    mainSections.innerHTML += `
-                        <div class="section">
-                            <h2 class="item-title"><i class="fas fa-comment"></i> 自我评价</h2>
-							<ul>${details}</ul>
+					const details = document.querySelector('.evaluation-details').value.split('\n').map(d => `<li style="page-break-inside: avoid;">${d}</li>`).join('');
+                    personalInfo.innerHTML += `
+                        <div class="section" style="page-break-inside: avoid;">
+                            <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-comment"></i> 自我评价</h2>
+							<ul style="page-break-inside: avoid;">${details}</ul>
                         </div>
                     `;
                 } else if (id === 'languages' && document.getElementById('showLanguages').checked) {
@@ -1100,12 +1113,12 @@
                     languages.forEach(lang => {
                         const name = lang.querySelector('.lang-name').value;
                         const level = lang.querySelector('.lang-level').value;
-                        langHtml += `<li>${name}: ${level}</li>`;
+                        langHtml += `<li style="page-break-inside: avoid;">${name}: ${level}</li>`;
                     });
-                    mainSections.innerHTML += `
-                        <div class="section">
-                            <h2 class="item-title"><i class="fas fa-language"></i> 外语等级</h2>
-                            <ul>${langHtml}</ul>
+                    personalInfo.innerHTML += `
+                        <div class="section" style="page-break-inside: avoid;">
+                            <h2 class="item-title" style="page-break-inside: avoid;"><i class="fas fa-language"></i> 外语等级</h2>
+                            <ul style="page-break-inside: avoid;">${langHtml}</ul>
                         </div>
                     `;
                 }
@@ -1262,17 +1275,19 @@
                 margin: 0,
                 filename: document.getElementById('name').value + '_简历.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-					scale: 2, // 高分辨率渲染
-					useCORS: true // 支持跨域图片（如头像）
+                html2canvas: {
+					scale: 4, // 高分辨率渲染
+					useCORS: true, // 支持跨域图片（如头像）
+					logging: true
 				},
-                jsPDF: { 
-					unit: 'in', 
+                jsPDF: {
+					unit: 'in',
 					format: 'letter', // 8.5in x 11in
 					orientation: 'portrait',
 					putOnlyUsedFonts: true,
 					compress: true // 压缩PDF
-				}
+				},
+				pagebreak: { mode: ['css', 'legacy'], before: '.page-break' }
             };
             html2pdf().set(opt).from(element).save();
         }
