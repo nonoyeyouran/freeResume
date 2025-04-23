@@ -713,7 +713,7 @@
         </div>
         <div class="form-group">
             <label>求职岗位</label>
-            <input type="text" id="jobTitle" value="前端开发工程师">
+            <input type="text" id="jobTitle" value="机器学习算法工程师">
         </div>
         <div id="sortable-sections">
 			<div class="form-group" data-id="education" id="education-group">
@@ -746,13 +746,17 @@
                 <label>专业技能 <input type="checkbox" id="showSkills" class="checkbox" checked onchange="updatePreview()"> 显示
                     <button class="order-btn" onclick="moveUp(this)">↑</button>
                     <button class="order-btn" onclick="moveDown(this)">↓</button></label>
-				<textarea id="skills" class="skills-details" placeholder="填写专业技能，支持多行显示"></textarea>
+				<textarea id="skills" class="skills-details" placeholder="填写专业技能，支持多行显示">
+                    精通推荐系统召回、排序的各种模型和策略，有丰富实战经验。(Wide&Deep、DeepFM、XGboost、DCN、MMOE)。
+                    熟悉分布式计算工具hadoop、spark，熟悉linux基础命令、vim、git；熟悉C++、python、java。
+                    熟悉常见的机器学习模型（LR、树模型、神经网络等）、tensorflow框架。
+                </textarea>
             </div>
             <div class="form-group" data-id="hobbies">
                 <label>兴趣爱好 <input type="checkbox" id="showHobbies" class="checkbox" checked onchange="updatePreview()"> 显示
                     <button class="order-btn" onclick="moveUp(this)">↑</button>
                     <button class="order-btn" onclick="moveDown(this)">↓</button></label>
-				<textarea id="hobbies" class="hobbies-details" placeholder="填写兴趣爱好，支持多行显示"></textarea>
+				<textarea id="hobbies" class="hobbies-details" placeholder="填写兴趣爱好，支持多行显示">跑步、读书、追剧、做饭</textarea>
             </div>
             <div class="form-group" data-id="evaluation">
                 <label>自我评价 <input type="checkbox" id="showEvaluation" class="checkbox" checked onchange="updatePreview()"> 显示
